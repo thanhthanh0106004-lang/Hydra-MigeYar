@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TCVT Core</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#12141a">
+
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet"/>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  height:100vh;
+  overflow:hidden;
+  font-family:Arial;
+  color:white;
+
+  background:linear-gradient(135deg,#12141a,#171a22,#1c2230);
+  background-size:200% 200%;
+  animation:bgMove 18s ease infinite;
+}
+
+@keyframes bgMove{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+/* PARTICLES */
+#particles{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+}
+
+/* PAGE ROOT */
+#page-root{
+  position:absolute;
+  inset:0;
+  z-index:5;
+
+  padding:80px 16px 100px;
+  overflow:auto;
+}
+
+/* PAGE BASE */
+.page{
+  animation:fade .25s ease;
+}
+
+@keyframes fade{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+/* TOPBAR */
+.di{
+  position:fixed;
+  top:10px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:20;
+
+  height:38px;
+  width:140px;
+
+  background:rgba(30,34,44,0.85);
+  backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:999px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  transition:.35s cubic-bezier(.2,.9,.2,1);
+  overflow:hidden;
+}
+
+.di.open{
+  width:92%;
+  max-width:420px;
+  height:46px;
+  border-radius:18px;
+  justify-content:space-between;
+  padding:0 14px;
+}
+
+.di-inner{
+  display:flex;
+  width:100%;
+  align-items:center;
+  justify-content:center;
+}
+
+.left{
+  font-size:13px;
+  opacity:.7;
+  display:none;
+}
+
+.center{
+  font-size:13px;
+  font-weight:500;
+  background:linear-gradient(90deg,#4da3ff,#b06bff);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.di.open .di-inner{justify-content:space-between;}
+.di.open .left{display:block;}
+
+/* BOTTOM */
+.bottom-bar{
+  position:fixed;
+  bottom:16px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:20;
+
+  width:92%;
+  max-width:420px;
+  height:60px;
+
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+
+  background:rgba(30,34,44,0.85);
+  backdrop-filter:blur(10px);
+
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,0.08);
+}
+
+.material-symbols-rounded{
+  font-size:26px;
+  color:rgba(255,255,255,0.45);
+  transition:.2s;
+}
+
+.item.active .material-symbols-rounded{
+  color:white;
+}
+
+/* DEMO PAGE STYLE */
+.block{
+  padding:20px;
+  border-radius:16px;
+  background:rgba(255,255,255,0.05);
+  margin-bottom:12px;
+}
+
+.page-title{
+  font-size:18px;
+  font-weight:600;
+
+  display:inline-block;
+
+  margin-bottom:14px;
+  margin-left:6px;
+  margin-top:4px;
+
+  background:linear-gradient(90deg,#4da3ff,#b06bff);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+
+  position:relative;
+}
+
+.page-title::after{
+  content:"";
+  display:block;
+
+  width:100%;
+  height:2px;
+
+  margin-top:4px;
+
+  background:linear-gradient(90deg,#4da3ff,#b06bff);
+  opacity:.6;
+
+  border-radius:2px;
+}
+
+.tool-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin-top:10px;
+}
+
+.tool-item{
+  aspect-ratio:1/1;
+  border-radius:18px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:rgba(35,39,51,0.75);
+  border:1px solid rgba(111,168,255,0.15);
+
+  backdrop-filter:blur(10px);
+  cursor:pointer;
+
+  transition:.2s;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tool-item .material-symbols-rounded{
+  font-size:28px;
+  color:rgba(255,255,255,0.7);
+}
+
+/* 👉 Chỉ áp dụng hover khi thiết bị hỗ trợ */
+
+
+@media (hover:hover){
+  .tool-item:hover{
+    transform:scale(1.08);
+    border-color:#6fa8ff;
+    box-shadow:0 10px 25px rgba(111,168,255,0.2);
+  }
+}
+
+/* 👉 Mobile dùng active (không bug) */
+.tool-item:active{
+  transform:scale(0.92);
+  border-color:#6fa8ff;
+  box-shadow:0 6px 18px rgba(111,168,255,0.25);
+}
+
+.tool-back{
+  width:44px;
+  height:44px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  margin-top:10px;
+
+  border-radius:12px;
+  background:rgba(35,39,51,0.7);
+  border:1px solid rgba(111,168,255,0.15);
+
+  backdrop-filter:blur(10px);
+  cursor:pointer;
+
+  transition:.2s;
+}
+
+.tool-back .material-symbols-rounded{
+  font-size:20px;
+  color:rgba(255,255,255,0.7);
+}
+
+@media (hover:hover){
+  .tool-back:hover{
+    transform:scale(1.1);
+    border-color:#6fa8ff;
+  }
+}
+
+.tool-back:active{
+  transform:scale(0.9);
+}
+
+.note-card{
+  display:flex;
+  flex-direction:column;
+
+  align-items:stretch; /* 🔥 ép full chiều ngang */
+  justify-content:flex-start;
+
+  padding:0; /* 🔥 bỏ padding để line full */
+  text-align:left;
+}
+
+/* phần tiêu đề */
+.note-title{
+  width:100%;
+  padding:10px;
+
+  font-size:12px;
+  font-weight:600;
+
+  border-bottom:1px solid rgba(255,255,255,0.1); /* 🔥 full width */
+
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+/* phần nội dung */
+.note-content{
+  width:100%;
+  padding:8px 10px;
+
+  font-size:11px;
+  opacity:.65;
+
+  overflow:hidden;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+}
+
+/* 🔥 thanh nút trên */
+.note-actions{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  margin-bottom:10px;
+}
+
+.note-actions .material-symbols-rounded{
+  font-size:24px;
+  color:rgba(255,255,255,0.7);
+  cursor:pointer;
+}
+
+/* 🔥 khối note */
+.note-editor{
+  width:100%;
+  border-radius:18px;
+
+  background:rgba(35,39,51,0.75);
+  border:1px solid rgba(111,168,255,0.15);
+
+  overflow:hidden; /* 🔥 giữ 1 khối liền */
+}
+
+/* tiêu đề */
+.note-editor input{
+  width:100%;
+  border:none;
+  outline:none;
+
+  padding:12px;
+  font-size:14px;
+  font-weight:600;
+
+  background:transparent;
+  color:white;
+
+  border-bottom:1px solid rgba(255,255,255,0.1); /* 🔥 line chia */
+}
+
+/* nội dung */
+.note-editor textarea{
+  width:100%;
+  border:none;
+  outline:none;
+
+  padding:12px;
+  font-size:13px;
+
+  background:transparent;
+  color:white;
+
+  resize:none;
+
+  min-height:120px;
+
+  /* 🔥 QUAN TRỌNG */
+  height:auto;
+  overflow:hidden; /* ❌ bỏ scroll trong */
+}
+
+.note-actions{
+  margin-bottom:10px;
+}
+
+/* 🔥 khung dài */
+.actions-box{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between; /* 🔥 tách 2 bên */
+
+  padding:8px 12px;
+  border-radius:16px;
+
+  background:rgba(35,39,51,0.75);
+  border:1px solid rgba(111,168,255,0.15);
+
+  backdrop-filter:blur(10px);
+}
+
+/* nhóm bên phải */
+.right-actions{
+  display:flex;
+  gap:12px;
+}
+
+/* icon */
+.actions-box .material-symbols-rounded{
+  font-size:22px;
+  color:rgba(255,255,255,0.7);
+  cursor:pointer;
+  transition:.2s;
+}
+
+/* hover */
+@media (hover:hover){
+  .actions-box .material-symbols-rounded:hover{
+    color:white;
+    transform:scale(1.15);
+  }
+}
+
+/* mobile */
+.actions-box .material-symbols-rounded:active{
+  transform:scale(0.85);
+  color:#6fa8ff;
+}
+
+.tool-title{
+  font-size:18px;
+  font-weight:600;
+
+  margin-bottom:12px;
+  margin-left:6px;
+  margin-top:4px;
+
+  background:linear-gradient(90deg,#4da3ff,#b06bff);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="di" id="di">
+  <div class="di-inner">
+    <span class="left">Tìm kiếm</span>
+    <span class="center">Hydra & MigeYar</span>
+  </div>
+</div>
+
+<canvas id="particles"></canvas>
+
+<!-- 🔥 PAGE ROOT -->
+<div id="page-root"></div>
+
+<div class="bottom-bar">
+  <div class="item active"><span class="material-symbols-rounded">home</span></div>
+  <div class="item"><span class="material-symbols-rounded">edit</span></div>
+  <div class="item"><span class="material-symbols-rounded">sports_esports</span></div>
+  <div class="item"><span class="material-symbols-rounded">chat</span></div>
+  <div class="item"><span class="material-symbols-rounded">settings</span></div>
+</div>
+
+<script>
+/* ================= TOPBAR ================= */
+const di = document.getElementById("di");
+let timer;
+
+function resetTimer(){
+  clearTimeout(timer);
+  timer = setTimeout(()=>di.classList.remove("open"),3000);
+}
+
+di.addEventListener("click",(e)=>{
+  e.stopPropagation();
+  di.classList.toggle("open");
+  if(di.classList.contains("open")) resetTimer();
+});
+
+document.addEventListener("click",()=>di.classList.remove("open"));
+di.classList.add("open");
+resetTimer();
+
+/* ================= PARTICLES ================= */
+const canvas=document.getElementById("particles");
+const ctx=canvas.getContext("2d");
+
+function resize(){
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+}
+resize();
+
+let p=[];
+for(let i=0;i<120;i++){
+  p.push({
+    x:Math.random()*canvas.width,
+    y:Math.random()*canvas.height,
+    r:Math.random()*2,
+    dx:(Math.random()-0.5)*0.3,
+    dy:(Math.random()-0.5)*0.3
+  });
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  p.forEach(o=>{
+    o.x+=o.dx; o.y+=o.dy;
+    if(o.x<0||o.x>canvas.width) o.dx*=-1;
+    if(o.y<0||o.y>canvas.height) o.dy*=-1;
+
+    ctx.beginPath();
+    ctx.arc(o.x,o.y,o.r,0,Math.PI*2);
+    ctx.fillStyle="rgba(111,168,255,0.4)";
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+draw();
+window.addEventListener("resize",resize);
+
+/* ================= PAGE SYSTEM ================= */
+const root = document.getElementById("page-root");
+const bottom = document.querySelector(".bottom-bar");
+
+const PAGES = {
+  home:{type:"system"},
+  tool:{type:"system"},
+  game:{type:"system"},
+  chat:{type:"system"},
+  setting:{type:"system"},
+
+  chat_room:{type:"chat", hideBottom:true}
+};
+
+function openPage(name){
+  const page = PAGES[name];
+  if(!page) return;
+
+  // reset UI
+  root.innerHTML = "";
+
+  // 👉 PAGE TOOL (đặc biệt)
+  if(name==="tool"){
+  root.innerHTML = `
+    <div class="page">
+
+      <div class="page-title">TOOL</div>
+
+      <div id="tool-home" class="tool-grid">
+
+        <div class="tool-item" onclick="openTool('note')">
+          <span class="material-symbols-rounded">note</span>
+        </div>
+
+        <div class="tool-item" onclick="openTool('text')">
+          <span class="material-symbols-rounded">text_fields</span>
+        </div>
+
+        <div class="tool-item" onclick="openTool('calc')">
+          <span class="material-symbols-rounded">calculate</span>
+        </div>
+
+        <div class="tool-item" onclick="openTool('convert')">
+          <span class="material-symbols-rounded">swap_horiz</span>
+        </div>
+
+      </div>
+
+      <div id="tool-root" style="display:none;"></div>
+
+    </div>
+  `;
+}
+
+  // 👉 PAGE KHÁC
+  else{
+    root.innerHTML = `
+      <div class="page">
+        <div class="page-title">${name.toUpperCase()}</div>
+        <div class="block">Content...</div>
+      </div>
+    `;
+  }
+
+  // hide bottom nếu cần
+  bottom.style.display = page.hideBottom ? "none" : "flex";
+}
+
+/* ================= TOOL ================= */
+function openTool(name){
+  const home = document.getElementById("tool-home");
+  const root = document.getElementById("tool-root");
+
+  // 1. Ẩn home ngay
+  home.style.display = "none";
+
+  // 2. Hiện tool (trạng thái ban đầu)
+  root.style.display = "block";
+  root.innerHTML = `
+    <div class="tool-page" style="opacity:0; transform:translateX(60px);">
+      ${renderTool(name)}
+    </div>
+  `;
+
+  const el = root.firstElementChild;
+
+  // 3. 🔥 trigger animation đúng cách
+  requestAnimationFrame(()=>{
+    el.style.transition = ".45s cubic-bezier(.22,1,.36,1)";
+    el.style.opacity = "1";
+    el.style.transform = "translateX(0)";
+  });
+  
+  if(name==="note"){
+  setTimeout(renderNotes,0);
+}
+  
+}
+
+function renderTool(name){
+  if(name==="note"){
+    return `
+      <div class="tool-title">NOTE</div>
+
+      <div id="note-list" class="tool-grid"></div>
+
+      <div class="tool-back" onclick="backTool()">
+  <span class="material-symbols-rounded">arrow_back_ios_new</span>
+</div>
+    `;
+  }
+
+  if(name==="text"){
+    return `
+      <div class="tool-title">TEXT</div>
+      <div class="block">Đếm chữ</div>
+      <div class="tool-back" onclick="backTool()">
+  <span class="material-symbols-rounded">arrow_back_ios_new</span>
+</div>
+    `;
+  }
+
+  if(name==="calc"){
+    return `
+      <div class="tool-title">CALC</div>
+      <div class="block">Máy tính</div>
+      <div class="tool-back" onclick="backTool()">
+  <span class="material-symbols-rounded">arrow_back_ios_new</span>
+</div>
+    `;
+  }
+
+  if(name==="convert"){
+    return `
+      <div class="tool-title">CONVERT</div>
+      <div class="block">Đổi đơn vị</div>
+      <div class="tool-back" onclick="backTool()">
+  <span class="material-symbols-rounded">arrow_back_ios_new</span>
+</div>
+    `;
+  }
+}
+
+function backTool(){
+  const home = document.getElementById("tool-home");
+  const root = document.getElementById("tool-root");
+  const el = root.firstElementChild;
+
+  // 1. animate tool out
+  el.style.transform = "translateX(30px)";
+  el.style.opacity = "0";
+
+  setTimeout(()=>{
+    root.style.display = "none";
+    home.style.display = "grid";
+
+    // 2. fade home lại
+    requestAnimationFrame(()=>{
+      home.style.opacity = "1";
+    });
+
+  },200);
+}
+
+/* NOTE */ 
+let notes = JSON.parse(localStorage.getItem("notes") || "[]");
+let currentNote = null;
+let isDirty = false;
+
+function renderNotes(){
+  const list = document.getElementById("note-list");
+  if(!list) return;
+
+  list.innerHTML = "";
+
+  // 🔥 Ô tạo note
+  const create = document.createElement("div");
+  create.className = "tool-item";
+  create.innerHTML = `
+    <span class="material-symbols-rounded">add</span>
+  `;
+  create.onclick = createNote;
+  list.appendChild(create);
+
+  // 🔥 Các note
+  notes.forEach((n, i)=>{
+    const div = document.createElement("div");
+    div.className = "tool-item note-card";
+
+    div.innerHTML = `
+      <div class="note-title">
+        ${n.title || "No title"}
+      </div>
+
+      <div class="note-content">
+        ${(n.content || "Trống").slice(0,60)}
+      </div>
+    `;
+
+    div.onclick = ()=>openNote(i);
+    list.appendChild(div);
+  });
+}
+
+function createNote(){
+  currentNote = {title:"", content:""};
+  isDirty = false;
+  openNoteEditor();
+}
+
+function openNote(i){
+  currentNote = {...notes[i], index:i};
+  isDirty = false;
+  openNoteEditor();
+}
+
+function openNoteEditor(){
+  const root = document.getElementById("tool-root");
+
+  root.innerHTML = `
+    <div class="note-actions">
+  <div class="actions-box">
+    <span class="material-symbols-rounded" onclick="backFromEditor()">arrow_back</span>
+
+    <div class="right-actions">
+      <span class="material-symbols-rounded" onclick="saveNote()">save</span>
+      <span class="material-symbols-rounded" onclick="deleteNote()">delete</span>
+    </div>
+  </div>
+</div>
+
+    <div class="note-editor">
+      <input id="note-title"
+        placeholder="Tiêu đề"
+        value="${currentNote.title}"
+      >
+
+      <textarea id="note-content"
+        placeholder="Nội dung..."
+      >${currentNote.content}</textarea>
+    </div>
+  `;
+
+  const title = document.getElementById("note-title");
+  const ta = document.getElementById("note-content");
+
+  // detect thay đổi
+  title.oninput = ()=>isDirty = true;
+  ta.oninput = ()=>{
+    isDirty = true;
+    autoResize();
+  };
+
+  // 🔥 AUTO RESIZE ĐÚNG CHỖ
+  function autoResize(){
+    ta.style.height = "auto";
+    ta.style.height = ta.scrollHeight + "px";
+  }
+
+  // chạy lần đầu
+  autoResize();
+}
+
+function saveNote(){
+  const title = document.getElementById("note-title").value;
+  const content = document.getElementById("note-content").value;
+
+  if(currentNote.index !== undefined){
+    notes[currentNote.index] = {title, content};
+  }else{
+    notes.push({title, content});
+  }
+
+  localStorage.setItem("notes", JSON.stringify(notes));
+  isDirty = false;
+
+  backToList();
+}
+
+function deleteNote(){
+  if(!confirm("Xóa note này?")) return;
+
+  if(currentNote.index !== undefined){
+    notes.splice(currentNote.index,1);
+    localStorage.setItem("notes", JSON.stringify(notes));
+  }
+
+  backToList();
+}
+
+function backFromEditor(){
+  if(isDirty){
+    if(!confirm("Chưa lưu, thoát sẽ mất dữ liệu. Tiếp tục?")) return;
+  }
+  backToList();
+}
+
+function backToList(){
+  openTool("note");
+  setTimeout(renderNotes,0);
+}
+
+
+/* ================= BOTTOM ================= */
+const items = document.querySelectorAll(".bottom-bar .item");
+
+const map = {
+  home:"home",
+  edit:"tool",
+  sports_esports:"game",
+  chat:"chat",
+  settings:"setting"
+};
+
+items.forEach(item=>{
+  item.addEventListener("click",()=>{
+    items.forEach(i=>i.classList.remove("active"));
+    item.classList.add("active");
+
+    const key = item.querySelector("span").textContent;
+    openPage(map[key]);
+  });
+});
+
+/* INIT */
+openPage("home");
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
+}
+</script>
+
+</body>
+</html>
