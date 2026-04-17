@@ -858,6 +858,23 @@ if ("serviceWorker" in navigator) {
       });
   });
 }
+
+  const logBox = document.createElement("div");
+logBox.style.position = "fixed";
+logBox.style.bottom = "80px";
+logBox.style.left = "10px";
+logBox.style.right = "10px";
+logBox.style.maxHeight = "120px";
+logBox.style.overflow = "auto";
+logBox.style.background = "rgba(0,0,0,0.7)";
+logBox.style.color = "lime";
+logBox.style.fontSize = "10px";
+logBox.style.zIndex = "99999";
+document.body.appendChild(logBox);
+
+console.log = (...args) => {
+  logBox.innerHTML += args.join(" ") + "<br>";
+};
   
 </script>
 
